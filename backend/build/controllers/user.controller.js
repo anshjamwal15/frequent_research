@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.listUsers = exports.saveUser = void 0;
+exports.saveStatesAndCitiesForCountry = exports.getAllCountriesWithStatesAndCities = exports.listUsers = exports.saveUser = void 0;
 const user_model_1 = require("../models/user.model");
+const location_model_1 = require("../models/location.model");
 function saveUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -37,3 +38,27 @@ function listUsers(req, res) {
     });
 }
 exports.listUsers = listUsers;
+const getAllCountriesWithStatesAndCities = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const countries = yield location_model_1.Country.find({}, { name: 1, states: 1 });
+        res.status(200).json(countries);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+exports.getAllCountriesWithStatesAndCities = getAllCountriesWithStatesAndCities;
+const saveStatesAndCitiesForCountry = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, states } = req.body;
+    try {
+        const country = new location_model_1.Country({ name, states });
+        const savedCountry = yield country.save();
+        res.json(savedCountry);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+exports.saveStatesAndCitiesForCountry = saveStatesAndCitiesForCountry;

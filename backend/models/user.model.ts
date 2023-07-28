@@ -29,7 +29,6 @@ const userSchema = new Schema({
   },
   gender: {
     type: String,
-    enum: ['male', 'female', 'other'],
     required: true,
   },
   dateOfBirth: {
@@ -49,7 +48,7 @@ export interface IUser extends Document {
   country: string;
   state: string;
   city: string;
-  gender: 'male' | 'female' | 'other';
+  gender: string;
   dateOfBirth: Date;
   age: number;
   comparePassword: (candidatePassword: string) => Promise<boolean>;
@@ -59,4 +58,4 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-export const User = mongoose.model<IUser>('Person', userSchema);
+export const User = mongoose.model<IUser>('User', userSchema);

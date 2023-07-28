@@ -66,7 +66,6 @@ const userSchema = new mongoose_1.Schema({
     },
     gender: {
         type: String,
-        enum: ['male', 'female', 'other'],
         required: true,
     },
     dateOfBirth: {
@@ -83,4 +82,4 @@ userSchema.methods.comparePassword = function (candidatePassword) {
         return yield bcryptjs_1.default.compare(candidatePassword, this.password);
     });
 };
-exports.User = mongoose_1.default.model('Person', userSchema);
+exports.User = mongoose_1.default.model('User', userSchema);
