@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import "../App.css";
 import { ICity, ICountry, IState } from "../interface/country";
 import { useNavigate } from "react-router-dom";
+import http from "../services/http-common";
 
 export const SignUp = () => {
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
   const navigate = useNavigate();
+  var newAge = 0;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,7 +31,7 @@ export const SignUp = () => {
     city: false,
     gender: false,
     dateOfBirth: false,
-    age: true,
+    age: false,
   });
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -39,20 +41,16 @@ export const SignUp = () => {
       );
       const selectedStates = selectedCountry?.states || [];
       const selectedCities = selectedCountry?.states[0].cities || [];
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
       setStates(selectedStates);
       setCities(selectedCities);
     }
-    setValidation((prevValidation) => ({
-      ...prevValidation,
-      [name]: validateField(name, value),
-    }));
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+    setValidation((prevValidation) => ({
+      ...prevValidation,
+      [name]: validateField(name, value),
     }));
   };
 
@@ -69,15 +67,10 @@ export const SignUp = () => {
       age: calculateAge(),
     };
 
-    fetch("http://localhost:5000/api/v1/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    })
+    http
+      .post("/register", userData)
       .then(() => console.log("User registered successfully"))
-      .catch((e) => console.log(e));
+      .catch((e) => console.log(e))
   };
 
   const calculateAge = () => {
@@ -85,19 +78,24 @@ export const SignUp = () => {
       const dob = new Date(formData.dateOfBirth);
       const ageDiff = Date.now() - dob.getTime();
       const ageDate = new Date(ageDiff);
-      return Math.abs(ageDate.getUTCFullYear() - 1970);
+      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      newAge = age;
+      return age;
     }
     return 0;
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/v1/countries")
-      .then((response) => response.json())
-      .then((data) => setCountries(data))
-      .catch((error) => console.error("Error fetching countries:", error));
+    http
+      .get<ICountry[]>("/countries")
+      .then((res) => setCountries(res.data))
+      .catch((e) => console.log(e));
   }, []);
 
+  console.log(validation)
+
   const validateField = (name: keyof typeof formData, value: string) => {
+    console.log(name)
     switch (name) {
       case "firstName":
         return /^[A-Za-z]+$/.test(value);
@@ -114,8 +112,12 @@ export const SignUp = () => {
       case "gender":
         return value.length > 0;
       case "dateOfBirth":
-        // return calculateAge() >= 14;
-        return value.length > 0;
+        if (newAge >= 14) {
+          validation.age = true;
+          return true;
+        }
+        validation.age = false;
+        return false;
       default:
         return false;
     }
@@ -131,10 +133,6 @@ export const SignUp = () => {
     }
     return true;
   };
-
-  console.log(validateAllFields());
-
-  console.log(validation);
 
   return (
     <form className="user-form" onSubmit={(e) => handleSubmit(e)}>
@@ -272,12 +270,13 @@ export const SignUp = () => {
         />
       </div>
       <div className="form-group">
-        <label htmlFor="age">Age: must be more than 14</label>
+        <label htmlFor="age">Age: {validation.age === true ? " " : "must more than 14"}</label>
         <input
           type="text"
           id="age"
           name="age"
           value={calculateAge()}
+          onChange={(e) => handleChange(e)}
           disabled
         />
       </div>

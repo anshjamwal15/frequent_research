@@ -3,6 +3,7 @@ import { User, IUser } from '../models/user.model';
 import { Country, ICountry } from '../models/location.model';
 
 export async function saveUser(req: Request, res: Response) {
+  console.log(req.body);
   try {
     const userData: IUser = req.body;
 

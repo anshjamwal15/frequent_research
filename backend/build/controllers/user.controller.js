@@ -14,6 +14,7 @@ const user_model_1 = require("../models/user.model");
 const location_model_1 = require("../models/location.model");
 function saveUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log(req.body);
         try {
             const userData = req.body;
             const newUser = new user_model_1.User(userData);
